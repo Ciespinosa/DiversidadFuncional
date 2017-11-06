@@ -1,0 +1,105 @@
+---
+title: "Diversidad Funcional"
+author: "Carlos Iván Espinosa"
+date: "4 de noviembre de 2016"
+output: 
+  html_document: 
+    highlight: espresso
+    theme: cosmo
+---
+
+#Introducción
+
+-----
+
+La forma más comunmente usada para referirse a la biodiversidad son los índices de diversidad los cuales están basados en riqueza y abundancia taxonómica (Whittaker 1972, Lande 1996, Purvis and Hector 2000). En los últimos años, los estudios de diversidad han incluído el concepto de diversidad funcional (Schleuter et al. 2010). 
+
+Pero, ¿qué es la diversidad funcional? Según Tilman (2001) la diversidad funcional se refiere al valor y rango de los rasgos funcionales de los organismos en un ecosistema dado. Aunque el concepto de diversidad funcional es más o menos claro, es necesario poder concretarlo en una medida. Durante muchos años la diversidad funcional fue usada para describir determinados aspectos de la comunidad,basados en la generación de grupos funcionales. Sin embargo, mientras que el enfoque de grupo funcional tiene la ventaja de la velocidad de aplicación, es teóricamente inferior a la medición de la diversidad funcional en una escala continua (Fonseca y Ganade, 2001)
+
+La diversidad funcional ha sido propuesta como un importante determinante de los procesos ecosistémicos (Loreau 1998; Chapin et al. 2000; Tilman 2000; Díaz & Cabido 2001; Loreau et al. 2001). Un mecanismo propuesto para explicar esta relación ha sido la __complementariedad__ (Tilman et al. 2001, Alder and Bradford 2002, Petchey 2003) 
+
+La complementariedad puede ser interpretada como una respuesta de las especies al uso de los recursos (nicho alpha) o a las condiciones (nicho beta). Una mayor complementariedad de nicho permitirá un uso más completo de los recursos disponibles dentro de una comunidad, permitiendo así una mayor productividad y resistencia a la invasión (Dukes 2001, Petchey 2003). Otros caracteres funcionales como la tolerancia a la sequía pueden reflejar una mayor variedad de respuestas a las condiciones ambientales , de manera la complementariedad de nichos puede ayudar a amortiguar los procesos ecosistemicos contra las fluctuaciones climáticas (i.e., aumentar la confiabilidad de los ecosistemas, Tilman 1996, Doak et al., 1998).
+
+Los mecanismos propuestos para vincular la diversidad y la función de los ecosistemas a través de la complementariedad de nichos se basan en la distribución de especies en el espacio de nicho. Por lo tanto, si la diversidad funcional es útil para probar estos mecanismos, los índices de diversidad funcional propuestos deben medir directamente los aspectos de la distribución de las especies en el espacio de nicho.
+
+Mason et al. (2005) propone la descripción de la diversidad funcional basado en tres diferentes medidas; riqueza, equitatividad y divergencia funcional. La riqueza funcional es medido como la cantidad de espacio de nicho (espacio funcional) ocupado por la especie dentro de una comunidad. La uniformidad de la distribución de la abundancia en el espacio de nicho puede utilizarse como medida de equitatividad funcional. El grado en que la distribución de las abundancias de las especies en el espacio de nicho maximiza la variación total de la comunidad en caracteres funcionales puede utilizarse como una divergencia funcional.
+
+#Medición de los componentes de la diversidad funcional
+
+Usaremos los datos brindados en el paquete `FD` para ejemplificar los cálculos de diversidad funcional (tussock). Los datos del objeto tussock contiene datos de 16 caracteres funcionales medidos en 53 especies de plantas vasculares de nueva Zelandia. Además se provee la abundancia relativa (porcentaje de cobertura) de estas 53 especies en 30 parcelas de 8x50 m.
+
+El 
+
+```{r}
+library(FD)
+matplot(tussock$abun, type = "l")
+```
+
+
+DESARROLLO DE LA PRÁCTICA
+
+cargar paquetes
+library(Rcmdr)
+library(FD)
+
+
+1)	IMPORTAR DATOS: hay dos formas de importar datos desde Excel:
+
+Usando R commander  
+
+Copiando los datos en Excel y luego:
+
+comp <- read.table(file="clipboard", header=TRUE, dec=".")  
+
+comp$ID <- NULL   #para anular la columna ID al hacer los cálculos. 
+
+Necesitamos dos matrices, en ambas matrices hay que establecer nombres de casos:
+
+Matriz especies (comp): especies en columnas y muestras en filas se llama: comp. Matriz del rasgo funcional (sla): especies en filas y los valores de SLA en columnas. 
+
+str(comp)
+str(sla)
+
+2)	Calcular los índices de diversidad funcional para el SLA (CWM, Rao, FRic...)
+
+FDSLA <- dbFD(sla, comp, calc.CWM= TRUE)
+
+3)	Extraer los resultados de los índices de diversidad funcional de cada muestra a una tabla que llamaremos TableFD:
+
+TableFD<-matrix(0,106,3)      	#para generar una tabla con 106 filas y 3 columnas
+
+rownames(TableFD)<-rownames(comp)   	#para que ponga en las filas los mismos nombres que en el objeto comp
+
+colnames(TableFD)<-c("CWM","Rao", "FRic")  	#para que ponga los títulos a las columnas: CWM, Rao y Fric
+
+TableFD[,1]<-(FDSLA$CWM[,1])           	#para que ponga en la primera columna los resultas del CWM obtenidos en el objeto FDSLA
+
+TableFD[,2]<-FDSLA$RaoQ                	#para que ponga en la segunda columna los resultados del RaoQ
+
+TableFD[,3]<-FDSLA$FRic 
+	
+
+4)	Salvar la tabla en un archivo txt que llamaremos FD.txt:
+
+write.table(TableFD, file="[ruta al lugar donde lo vamos a guardar] \\ FD.txt", dec=".", sep="\t")  
+
+Luego se importa desde Excel como un txt normal
+
+5)	Modelizar las 3 índices de diversidad funcional en función de la zona
+
+str(divfun)   #para importar la matriz donde tenemos las variables dependientes y la independiente
+
+Como ejemplo el modelo para CWM:
+
+lm.cwm<- lm (CWM~zona, data=divfun)
+Anova(lm.cwmsla)
+
+par(mfrow = c(2, 2))
+boxplot(CWM ~zona, data=
+
+divfun, main="CWM de SLA")
+
+
+# Bibliografía
+
+1. D. Schleuter, M. Daufresne, F. Massol, C. Argillier. A user’s guide to functional diversity indices. Ecological monographs, Ecological Society of America, 2010, 80 (3), pp.469 - 484.
